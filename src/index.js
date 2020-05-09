@@ -1,6 +1,23 @@
 import {GraphQLServer} from 'graphql-yoga'
 
 //Demo user data
+const posts = [{
+    id: '1a',
+    title: 'what is graphQL?',
+    body: 'It is a query language',
+    published: false
+},{
+    id: '2b',
+    title: 'The art of graphQLing',
+    body: 'graphqling is an art',
+    published: true
+},{
+    id: '3c',
+    title: 'why graphQl?',
+    body: 'GrphQL because well, money!',
+    published: false
+}]
+
 const users = [{
     id: '1a',
     name: 'lesly',
@@ -22,6 +39,7 @@ const users = [{
 const typeDefs = `
     type Query  {
         users(query: String!): [User!]!
+        posts(query: String!): [Post!]!
         me: User!
         post: Post!
     }
@@ -50,6 +68,16 @@ const resolvers = {
             }
             return users.filter((user) => {
                 return user.name.toLowerCase().includes(args.query.toLowerCase())
+            })
+        },
+        posts(parent,args,ctx,info) {
+            if(!args.query) {
+                return posts
+            }
+            return posts.filter((post)=> {
+                const isTitleMatch = post.title.toLowerCase().includes(args.query.toLowerCase())
+                const isBodyMatch = post.body.toLowerCase().includes(args.query.toLowerCase())
+                return isTitleMatch || isBodyMatch
             })
         },
         me() {
