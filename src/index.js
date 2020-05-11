@@ -38,6 +38,20 @@ const users = [{
     age: 21
 }]
 
+const comments = [{
+    id: 90,
+    text: "Nice article"
+},{
+    id: 80,
+    text: "Interesting discourse"
+}, {
+    id: 70,
+    text: "wawu, i am impressed"
+},{
+    id: 60,
+    text: "Thought provoking article"
+}]
+
 //Type definitions
 const typeDefs = `
     type Query  {
@@ -45,6 +59,7 @@ const typeDefs = `
         posts(query: String): [Post!]!
         me: User!
         post: Post!
+        comments: [Comment!]!
     }
 
     type User {
@@ -61,6 +76,11 @@ const typeDefs = `
         body: String!
         published: Boolean!
         author: User!
+    }
+
+    type Comment {
+        id: ID!
+        text: String!
     }
 `
 
@@ -84,6 +104,9 @@ const resolvers = {
                 const isBodyMatch = post.body.toLowerCase().includes(args.query.toLowerCase())
                 return isTitleMatch || isBodyMatch
             })
+        },
+        comments(parent, args, ctx, info) {
+            return comments
         },
         me() {
             return {
