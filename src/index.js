@@ -1,24 +1,26 @@
 import {GraphQLServer} from 'graphql-yoga'
-
+import uuidv4  from 'uuid/v4'
+//const { v4: uuidv4 } = require('uuid')
+ 
 //Demo user data
 const posts = [{
     id: '1a',
     title: 'what is graphQL?',
     body: 'It is a query language',
     published: false,
-    author: '20b'
+    author: '20b',
 },{
     id: '2b',
     title: 'The art of graphQLing',
     body: 'graphqling is an art',
     published: true,
-    author: '10a'
+    author: '10a',
 },{
     id: '3c',
     title: 'why graphQl?',
     body: 'GrphQL because well, money!',
     published: false,
-    author: '10a'
+    author: '10a',
 }]
 
 const users = [{
@@ -70,6 +72,10 @@ const typeDefs = `
         comments: [Comment!]!
     }
 
+    type Mutation {
+        createUser(name: String!, email: String!, age: Int): User!
+    }
+
     type User {
         id: ID!
         name: String!
@@ -85,6 +91,7 @@ const typeDefs = `
         body: String!
         published: Boolean!
         author: User!
+        comments: [Comment!]!
     }
 
     type Comment {
@@ -136,12 +143,35 @@ const resolvers = {
             }
         }
     },
+    Mutation: {
+        createUser(parent, args, ctx, info) {
+            const emailTaken = users.some((user)=>user.email === args.email)
+            if(emailTaken){
+                throw new Errorr("Email Taken")
+            }
+            const user = {
+                id: uuidv4(),
+                name: args.name,
+                email: args.email,
+                age: args.age
+            }
+
+            users.push(user)
+
+            return user 
+        }
+    },
     Post: {
         author(parent, args, ctx, info) {
             return users.find((user)=>{
                 return user.id === parent.author
             })
         },
+        comments(parent, args, ctx, info) {
+            return comments.filter((comment)=>{
+                return comment.post === parent.id
+            })
+        }
     },
     User: {
         posts(parent, args, ctx, info){
