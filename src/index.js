@@ -3,7 +3,7 @@ import uuidv4  from 'uuid/v4'
 //const { v4: uuidv4 } = require('uuid')
  
 //Demo user data
-const posts = [{
+let posts = [{
     id: '1a',
     title: 'what is graphQL?',
     body: 'It is a query language',
@@ -23,7 +23,7 @@ const posts = [{
     author: '10a',
 }]
 
-const users = [{
+let users = [{
     id: '10a',
     name: 'lesly',
     email: 'lesly@gmail.com',
@@ -40,7 +40,7 @@ const users = [{
     age: 21
 }]
 
-const comments = [{
+let comments = [{
     id: 90,
     text: "Nice article",
     author: "30c",
@@ -74,7 +74,9 @@ const typeDefs = `
 
     type Mutation {
         createUser(data: createUserInput): User!
+        deleteUser(id: ID!): User!
         createPost(data: createPostInput): Post!
+        deletePost(id: ID!): Post!
         createComment(data: createCommentInput): Comment!
     }
 
@@ -178,6 +180,26 @@ const resolvers = {
 
             return user 
         },
+        deleteUser(parent, args, ctx, info) {
+            const userIndex = users.findIndex((user)=> user.id === args.id)
+
+            if(userIndex === -1) {
+                throw new Error("User not found")
+            }
+
+            const deletedUsers = users.splice(userIndex, 1)
+            posts = posts.filter((post)=>{
+                const match = post.author === args.id
+                if(match) {
+                    comments = comments.filter((comment)=>comment.post !== post.id)
+                }
+
+                return !match
+            }) 
+            comments = comments.filter((comment)=>comment.author !== args.id)
+            
+            return deletedUsers[0]
+        },
         createPost(parent, args, ctx, info){
             const userExists = users.some((user)=> user.id === args.data.author)
 
@@ -192,6 +214,18 @@ const resolvers = {
 
             posts.push(post)
             return post
+        },
+        deletePost(parent, args, ctx, info) {
+            const postIndex = posts.findIndex((post)=> post.id === args.id)
+            //console.log(postIndex)
+            if(postIndex === -1){
+                throw new Error("Post not found")
+            }
+            const deletedPosts = posts.splice(postIndex, 1)
+
+            comments = comments.filter((comment)=>comment.post !== args.id)
+
+            return deletedPosts[0]
         },
         createComment(parent, args, ctx, info) {
             const userExists = users.some((user)=> user.id === args.data.author)
