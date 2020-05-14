@@ -1,12 +1,14 @@
-import {GraphQLServer} from 'graphql-yoga'
+import {GraphQLServer, PubSub} from 'graphql-yoga'
 import db from './db'
 import Query from './resolver/Query'
 import Mutation from './resolver/Mutation'
 import User from './resolver/User'
 import Post from './resolver/Post'
 import Comment from './resolver/Comment'
+import Subscription from './resolver/Subscripton'
 //const { v4: uuidv4 } = require('uuid')
  
+const pubsub = new PubSub()
 //Demo user data
 
 
@@ -25,10 +27,12 @@ const server = new GraphQLServer({
         Mutation,
         User,
         Post,
-        Comment
+        Comment,
+        Subscription
     },
     context: {
-        db
+        db,
+        pubsub
     }
 })
 
